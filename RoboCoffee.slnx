@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RoboCoffee.Api/RoboCoffee.Api.csproj" />
+    <Project Path="src/RoboCoffee.Application/RoboCoffee.Application.csproj" />
+    <Project Path="src/RoboCoffee.Contracts/RoboCoffee.Contracts.csproj" />
+    <Project Path="src/RoboCoffee.Domain/RoboCoffee.Domain.csproj" />
+    <Project Path="src/RoboCoffee.Infrastructure/RoboCoffee.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RoboCoffee.IntegrationTests/RoboCoffee.IntegrationTests.csproj" />
+    <Project Path="tests/RoboCoffee.UnitTests/RoboCoffee.UnitTests.csproj" />
+  </Folder>
+</Solution>
