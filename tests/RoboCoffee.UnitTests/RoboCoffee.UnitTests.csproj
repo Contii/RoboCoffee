@@ -15,12 +15,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RoboCoffee.Domain\RoboCoffee.Domain.csproj" />
     <ProjectReference Include="..\..\src\RoboCoffee.Application\RoboCoffee.Application.csproj" />
+    <ProjectReference Include="..\..\src\RoboCoffee.Api\RoboCoffee.Api.csproj" />
   </ItemGroup>
 
 </Project>

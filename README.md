@@ -22,3 +22,15 @@ dotnet restore
 dotnet build
 dotnet test
 ```
+
+## API
+
+Durante o desenvolvimento:
+
+```powershell
+dotnet run --project src/RoboCoffee.Api/RoboCoffee.Api.csproj --launch-profile http
+```
+
+- Swagger UI: `http://localhost:5128/swagger`
+- OpenAPI: `http://localhost:5128/openapi/v1.json`
+- Health check: `http://localhost:5128/health`

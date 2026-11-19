@@ -325,3 +325,39 @@ Autorizei a criação da estrutura inicial antes da implementação das regras d
 **Resultado**
 
 A Etapa 1 está pronta como uma unidade de estrutura compilável, aguardando revisão do diff e aprovação do commit.
+
+**Commit relacionado**
+
+`4c9d569` - `chore: initialize solution structure`
+
+## 014 - Configuração da infraestrutura da API
+
+**Contexto**
+
+Implementei a Etapa 2 do plano de commits para disponibilizar documentação HTTP, health check e tratamento sanitizado de erros inesperados.
+
+**Contribuição da IA**
+
+A IA configurou Swagger UI, OpenAPI, health checks e um `IExceptionHandler` que retorna `ProblemDetails` com status 500 sem incluir detalhes internos da exceção.
+
+**Decisões confirmadas**
+
+- Mantive o OpenAPI nativo junto do Swagger UI.
+- `/health` responde `200 OK` com o texto `Healthy`.
+- Falhas inesperadas retornam um `ProblemDetails` sanitizado.
+- Os testes usam `WebApplicationFactory<Program>` para verificar os endpoints HTTP.
+- Swashbuckle e `Microsoft.AspNetCore.Mvc.Testing` foram fixados em versões compatíveis com .NET 10.
+
+**Correções realizadas**
+
+- Identifiquei uma referência do Swagger incompatível no primeiro teste de compatibilidade e ajustei para a versão 10.0.1.
+- Ajustei o projeto de testes unitários com `FrameworkReference` para acessar os tipos do ASP.NET Core.
+
+**Revisões realizadas**
+
+- `dotnet build RoboCoffee.slnx`: sucesso, zero avisos e zero erros.
+- Testes unitários: 1 aprovado, 0 falhas.
+- Testes de integração: 3 aprovados, 0 falhas.
+- Health check manual: `200 OK`, `Healthy`.
+- Swagger UI manual: `200 OK`.
+- OpenAPI manual: `200 OK`.
