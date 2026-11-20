@@ -613,3 +613,34 @@ A IA adicionou um teste de integração que cria um pedido, altera o nome e o pr
 - Testes unitários: 12 aprovados.
 - Testes de integração: 15 aprovados.
 - Um teste específico confirmou que nome e preço originais permanecem persistidos após a atualização do produto.
+
+## 022 - Regras de indisponibilidade e quantidade mínima
+
+**Contexto**
+
+Finalizei a Etapa 9 reforçando a cobertura dos casos obrigatórios de criação de pedidos: quantidade maior que zero e rejeição de produtos indisponíveis.
+
+**Contribuição da IA**
+
+A IA acrescentou um teste de integração que envia quantidade zero e confirmou por HTTP que o pedido é rejeitado com `400 Bad Request`.
+
+**Decisões confirmadas**
+
+- Quantidade menor que um é invalidada pela FluentValidation antes da infraestrutura.
+- `OrderItem.Create` mantém a mesma validação no domínio.
+- Produto indisponível é rejeitado pelo domínio com `DomainException`.
+- O exception handler traduz o conflito de domínio para `409 Conflict`.
+- Produto ativo e disponível é necessário para criar o item.
+
+**Correções realizadas**
+
+- Fechada a lacuna de teste da integração: quantidade zero agora possui um caso HTTP específico.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 16 aprovados.
+- Validação manual:
+  - quantidade zero: `400`;
+  - produto indisponível: `409`.

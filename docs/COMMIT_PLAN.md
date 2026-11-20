@@ -49,7 +49,7 @@ Nenhum comando Git deve ser executado antes de eu revisar o comando e o efeito e
 | 6 | ✅ Implementar FluentValidation e ProblemDetails | `feat: validate product requests` |
 | 7 | ✅ Implementar criação de pedidos e cálculo do total | `feat: add order creation` |
 | 8 | ✅ Implementar snapshot do preço e dados do produto no item | `feat: preserve product price in orders` |
-| 9 | Implementar indisponibilidade e quantidade mínima | `fix: enforce order creation rules` |
+| 9 | ✅ Implementar indisponibilidade e quantidade mínima | `fix: enforce order creation rules` |
 | 10 | Implementar transições de situação e cancelamento | `feat: add order status workflow` |
 | 11 | Integrar consulta de endereço ViaCEP | `feat: integrate address lookup with viacep` |
 | 12 | Adicionar timeout, retry e circuit breaker | `feat: add resilient address integration` |

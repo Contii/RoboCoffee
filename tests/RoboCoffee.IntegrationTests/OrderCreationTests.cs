@@ -83,6 +83,20 @@ public sealed class OrderCreationTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CreateOrderWithQuantityBelowOneReturnsBadRequest()
+    {
+        var product = await CreateProductAsync("Espresso", 12m, true);
+
+        var response = await _client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(
+            "Maria",
+            null,
+            null,
+            [new CreateOrderItemRequest(product.Id, 0, null)]));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateOrderWithUnknownProductReturnsNotFound()
     {
         var response = await _client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(

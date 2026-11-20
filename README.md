@@ -84,3 +84,11 @@ POST /api/orders
 ```
 
 O checkout cria o pedido, calcula o total a partir dos itens e preserva nome e preço atual dos produtos nos snapshots.
+
+Na criação de pedidos:
+
+- a quantidade deve ser maior que zero;
+- pedidos precisam possuir pelo menos um item;
+- produtos indisponíveis ou inativos não podem ser pedidos;
+- quantidade inválida retorna `400 Bad Request`;
+- produto indisponível retorna `409 Conflict`.
