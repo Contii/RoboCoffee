@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\RoboCoffee.Domain\RoboCoffee.Domain.csproj" />
     <ProjectReference Include="..\..\src\RoboCoffee.Application\RoboCoffee.Application.csproj" />
     <ProjectReference Include="..\..\src\RoboCoffee.Api\RoboCoffee.Api.csproj" />
+    <ProjectReference Include="..\..\src\RoboCoffee.Infrastructure\RoboCoffee.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

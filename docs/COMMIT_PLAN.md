@@ -43,8 +43,8 @@ Nenhum comando Git deve ser executado antes de eu revisar o comando e o efeito e
 |---:|---|---|
 | 1 | ✅ Criar solution, projetos e estrutura inicial | `chore: initialize solution structure` |
 | 2 | ✅ Configurar Swagger, health checks e tratamento global de erros | `feat: configure api infrastructure` |
-| 3 | Modelar `Product`, `Order`, `OrderItem` e enumerações | `feat: add catalog and order domain models` |
-| 4 | Configurar EF Core, DbContext e migrations iniciais | `feat: configure database and initial migration` |
+| 3 | ✅ Modelar `Product`, `Order`, `OrderItem` e enumerações | `feat: add catalog and order domain models` |
+| 4 | ✅ Configurar EF Core, DbContext e migrations iniciais | `feat: configure database and initial migration` |
 | 5 | Implementar CRUD de produtos | `feat: add product catalog endpoints` |
 | 6 | Implementar FluentValidation e ProblemDetails | `feat: validate product requests` |
 | 7 | Implementar criação de pedidos e cálculo do total | `feat: add order creation` |

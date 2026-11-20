@@ -44,3 +44,16 @@ dotnet run --project src/RoboCoffee.Api/RoboCoffee.Api.csproj --launch-profile h
 - Swagger UI: `http://localhost:5128/swagger`
 - OpenAPI: `http://localhost:5128/openapi/v1.json`
 - Health check: `http://localhost:5128/health`
+
+## Persistência
+
+A infraestrutura usa Entity Framework Core com PostgreSQL.
+
+Comandos locais de migrations:
+
+```powershell
+dotnet tool run dotnet-ef migrations list --project src/RoboCoffee.Infrastructure/RoboCoffee.Infrastructure.csproj --startup-project src/RoboCoffee.Api/RoboCoffee.Api.csproj --context RoboCoffeeDbContext
+dotnet tool run dotnet-ef database update --project src/RoboCoffee.Infrastructure/RoboCoffee.Infrastructure.csproj --startup-project src/RoboCoffee.Api/RoboCoffee.Api.csproj --context RoboCoffeeDbContext
+```
+
+No estado atual, `database update` exige uma instância PostgreSQL acessível por `ConnectionStrings:PostgreSQL`.

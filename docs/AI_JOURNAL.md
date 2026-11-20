@@ -390,3 +390,39 @@ A IA criou enumerações e entidades ricas para produto, pedido e item de pedido
 **Resultado**
 
 O domínio principal está modelado e coberto por testes focados, aguardando revisão e commit da Etapa 3.
+
+**Commit relacionado**
+
+`839ed4b` - `feat: add catalog and order domain models`
+
+## 016 - Configuração da persistência EF Core
+
+**Contexto**
+
+Implementei a Etapa 4 do plano de commits, preparando EF Core, PostgreSQL, DbContext, configurações por entidade e migration inicial.
+
+**Contribuição da IA**
+
+A IA criou o `RoboCoffeeDbContext`, os mapeamentos de `Product`, `Order` e `OrderItem`, o registro de dependência da infraestrutura e a migration `Initial`.
+
+**Decisões confirmadas**
+
+- Entity Framework Core usa Npgsql com PostgreSQL.
+- Tabelas: `products`, `orders` e `order_items`.
+- Enumerações são persistidas como texto.
+- Decimais são persistidos com precisão `(18,2)`.
+- Índices foram criados nos campos consultados com mais frequência.
+- Check constraints protegem preço, estoque, total e quantidade no banco.
+- `OrderItem` é configurado como filho de `Order` com deleção em cascata.
+- Credenciais não foram incluídas nos arquivos de configuração.
+- A migration pode ser criada e aplicada por um tool local `dotnet-ef`.
+
+**Revisões realizadas**
+
+- Restore da solution concluído.
+- Build concluído com zero avisos e zero erros.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 3 aprovados.
+- Migration `20261120190438_Initial` reconhecida pelo EF Core.
+- API iniciou em `http://localhost:5128` com o DbContext registrado.
+- PostgreSQL local não estava disponível, portanto a migration não pôde ser aplicada nesta máquina.
