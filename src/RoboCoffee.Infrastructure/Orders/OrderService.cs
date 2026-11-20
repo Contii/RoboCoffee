@@ -1,0 +1,94 @@
+using Microsoft.EntityFrameworkCore;
+using RoboCoffee.Application.Catalog;
+using RoboCoffee.Application.Orders;
+using RoboCoffee.Contracts.Orders;
+using RoboCoffee.Domain.Exceptions;
+using RoboCoffee.Domain.Orders;
+using RoboCoffee.Infrastructure.Persistence;
+
+namespace RoboCoffee.Infrastructure.Orders;
+
+public sealed class OrderService : IOrderService
+{
+    private readonly RoboCoffeeDbContext _context;
+
+    public OrderService(RoboCoffeeDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<OrderResponse> CreateAsync(
+        CreateOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request.Items is null || request.Items.Count == 0)
+        {
+            throw new DomainException("Order must contain at least one item.");
+        }
+
+        var productIds = request.Items
+            .Select(item => item.ProductId)
+            .Distinct()
+            .ToArray();
+
+        await using var transaction = _context.Database.IsRelational()
+            ? await _context.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
+        var products = await _context.Products
+            .Where(product => productIds.Contains(product.Id) && product.IsActive)
+            .ToDictionaryAsync(product => product.Id, cancellationToken);
+
+        foreach (var productId in productIds)
+        {
+            if (!products.ContainsKey(productId))
+            {
+                throw new ProductNotFoundException(productId);
+            }
+        }
+
+        var order = Order.Create(
+            Guid.NewGuid(),
+            request.CustomerName,
+            request.CustomerDocument,
+            request.PostalCode);
+
+        foreach (var item in request.Items)
+        {
+            order.AddItem(products[item.ProductId], item.Quantity, item.Observation);
+        }
+
+        order.EnsureHasItems();
+        order.CalculateTotal();
+
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
+        return Map(order);
+    }
+
+    private static OrderResponse Map(Order order)
+    {
+        return new OrderResponse(
+            order.Id,
+            order.CustomerName,
+            order.CustomerDocument,
+            order.PostalCode,
+            order.Status.ToString(),
+            order.Total,
+            order.CreatedAtUtc,
+            order.UpdatedAtUtc,
+            order.Items.Select(item => new OrderItemResponse(
+                item.Id,
+                item.ProductId,
+                item.ProductNameSnapshot,
+                item.Quantity,
+                item.UnitPriceSnapshot,
+                item.Subtotal,
+                item.Observation)).ToArray());
+    }
+}

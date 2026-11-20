@@ -74,3 +74,13 @@ DELETE /api/products/{id}
 
 As requisições de criação e atualização passam por FluentValidation.
 Payloads inválidos retornam `400 Bad Request` com `ProblemDetails` e uma coleção `errors` por campo.
+
+## Pedidos
+
+Endpoints disponíveis:
+
+```text
+POST /api/orders
+```
+
+O checkout cria o pedido, calcula o total a partir dos itens e preserva nome e preço atual dos produtos nos snapshots.

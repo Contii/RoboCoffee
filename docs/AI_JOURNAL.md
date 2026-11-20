@@ -555,3 +555,37 @@ A IA adicionou validadores para nome, categoria, tamanho, preço e estoque, regi
 A IA cometeu um erro ao indicar que FluentValidation já estaria pronta no ensaio do Commit 005, quando sua implementação pertencia ao Commit 006.
 
 Foi necessária uma revisão e uma conversa para realinhar as instruções de documentação do projeto, corrigindo o Commit 005 como pendente nessa funcionalidade e registrando corretamente sua implementação no Commit 006.
+
+## 020 - Criação de pedidos e cálculo do total
+
+**Contexto**
+
+Implementei a Etapa 7 com o endpoint de criação de pedidos, contratos HTTP, caso de uso, persistência EF Core e testes focados de integração.
+
+**Contribuição da IA**
+
+A IA criou os contratos `CreateOrderRequest`, `CreateOrderItemRequest`, `OrderResponse` e `OrderItemResponse`, o service `IOrderService/OrderService`, o `OrdersController` e o validador do pedido.
+
+**Decisões confirmadas**
+
+- `POST /api/orders` cria pedidos no estado `Received`.
+- Todo pedido exige pelo menos um item.
+- Quantidade deve ser maior que zero.
+- Produtos são buscados no mesmo contexto da criação.
+- Nome e preço são copiados para os itens no momento da criação.
+- O total é calculado pela soma dos subtotais no domínio.
+- Pedido e itens são persistidos na mesma operação EF Core.
+- PostgreSQL usa transação explícita; InMemory mantém o mesmo fluxo sem transação porque não oferece suporte no provider.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 14 aprovados.
+- Validação manual:
+  - saúde da API: `200`;
+  - criação do produto: `201`;
+  - criação do pedido: `201`;
+  - total calculado: `24.00`;
+  - preço unitário snapshot: `12.00`;
+  - subtotal: `24.00`.
