@@ -361,3 +361,32 @@ A IA configurou Swagger UI, OpenAPI, health checks e um `IExceptionHandler` que 
 - Health check manual: `200 OK`, `Healthy`.
 - Swagger UI manual: `200 OK`.
 - OpenAPI manual: `200 OK`.
+
+## 015 - Modelagem do domínio
+
+**Contexto**
+
+Implementei a Etapa 3 do plano de commits com os modelos essenciais de catálogo e pedidos.
+
+**Contribuição da IA**
+
+A IA criou enumerações e entidades ricas para produto, pedido e item de pedido, além de uma exceção de domínio e métodos para snapshot, cálculo do total e fluxo de status.
+
+**Decisões confirmadas**
+
+- `Product` valida nome, preço e estoque negativo.
+- `OrderItem` preserva nome e preço do produto no momento da criação.
+- `Order` calcula o total a partir dos itens e exige pelo menos um item antes da confirmação.
+- `OrderStatus` segue `Received`, `Preparing`, `Ready`, `Delivered` e `Cancelled`.
+- Somente pedidos em `Received` podem ser cancelados.
+- Itens não podem ser alterados após a criação.
+
+**Revisões realizadas**
+
+- `dotnet build RoboCoffee.slnx --no-restore --disable-build-servers -m:1`: sucesso, zero avisos e zero erros.
+- Testes unitários: 11 aprovados, 0 falhas.
+- Testes de integração: 3 aprovados, 0 falhas.
+
+**Resultado**
+
+O domínio principal está modelado e coberto por testes focados, aguardando revisão e commit da Etapa 3.

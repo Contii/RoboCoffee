@@ -13,6 +13,16 @@ A solution .NET 10 foi criada com projetos separados por responsabilidade:
 - `RoboCoffee.UnitTests`
 - `RoboCoffee.IntegrationTests`
 
+## Domínio atual
+
+O núcleo de domínio já contém os modelos principais:
+
+- `Product`, `ProductCategory` e `ProductSize`
+- `Order`, `OrderItem` e `OrderStatus`
+- `DomainException`
+
+Os pedidos preservam nome e preço do produto no momento da inclusão do item. A situação é avançada por métodos de domínio e segue o fluxo `Received -> Preparing -> Ready -> Delivered`, com cancelamento permitido apenas em `Received`.
+
 ## Desenvolvimento local
 
 Pré-requisito: SDK .NET 10.
