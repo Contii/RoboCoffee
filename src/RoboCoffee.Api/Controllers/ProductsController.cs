@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 using RoboCoffee.Application.Catalog;
 using RoboCoffee.Contracts.Catalog;
 
@@ -9,10 +10,17 @@ namespace RoboCoffee.Api.Controllers;
 public sealed class ProductsController : ControllerBase
 {
     private readonly IProductCatalogService _catalog;
+    private readonly IValidator<CreateProductRequest> _createValidator;
+    private readonly IValidator<UpdateProductRequest> _updateValidator;
 
-    public ProductsController(IProductCatalogService catalog)
+    public ProductsController(
+        IProductCatalogService catalog,
+        IValidator<CreateProductRequest> createValidator,
+        IValidator<UpdateProductRequest> updateValidator)
     {
         _catalog = catalog;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
     }
 
     [HttpPost]
@@ -23,6 +31,7 @@ public sealed class ProductsController : ControllerBase
         [FromBody] CreateProductRequest request,
         CancellationToken cancellationToken)
     {
+        await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
         var product = await _catalog.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
@@ -59,6 +68,7 @@ public sealed class ProductsController : ControllerBase
         [FromBody] UpdateProductRequest request,
         CancellationToken cancellationToken)
     {
+        await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
         var product = await _catalog.UpdateAsync(id, request, cancellationToken);
         return Ok(product);
     }

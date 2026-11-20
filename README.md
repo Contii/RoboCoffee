@@ -71,3 +71,6 @@ DELETE /api/products/{id}
 ```
 
 `DELETE` usa exclusão lógica. Produtos desativados deixam de aparecer nas consultas.
+
+As requisições de criação e atualização passam por FluentValidation.
+Payloads inválidos retornam `400 Bad Request` com `ProblemDetails` e uma coleção `errors` por campo.

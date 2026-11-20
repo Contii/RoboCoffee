@@ -519,3 +519,39 @@ Com PostgreSQL acessível na porta 5432, a API foi iniciada em `http://localhost
 - `PUT /api/products/{id}`: dados atualizados com `200`;
 - `DELETE /api/products/{id}`: `204 No Content`;
 - consulta posterior ao produto desativado: `404 Not Found`.
+
+**Commit relacionado**
+
+`6b9f826` - `feat: add product catalog endpoints`
+
+## 019 - FluentValidation e ProblemDetails dos produtos
+
+**Contexto**
+
+Após confirmar a Etapa 5 localmente, implementei a Etapa 6 para validar payloads de criação e atualização antes de executar a camada de infraestrutura.
+
+**Contribuição da IA**
+
+A IA adicionou validadores para nome, categoria, tamanho, preço e estoque, registrou os validadores no ASP.NET Core e traduziu `ValidationException` para `400 Bad Request` com `ValidationProblemDetails`.
+
+**Decisões confirmadas**
+
+- Nome é obrigatório e limitado a 200 caracteres.
+- Categoria e tamanho devem corresponder aos enums de domínio.
+- Preço deve ser maior que zero.
+- Estoque, quando informado, não pode ser negativo.
+- Erros são agrupados por nome de propriedade em `errors`.
+- Regras sintáticas ficam na entrada HTTP; regras de entidade continuam no domínio.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 10 aprovados.
+- Validação manual: `POST /api/products` com payload inválido retornou `400` e `errors` para nome, categoria, tamanho, preço e estoque.
+
+**Correções realizadas**
+
+A IA cometeu um erro ao indicar que FluentValidation já estaria pronta no ensaio do Commit 005, quando sua implementação pertencia ao Commit 006.
+
+Foi necessária uma revisão e uma conversa para realinhar as instruções de documentação do projeto, corrigindo o Commit 005 como pendente nessa funcionalidade e registrando corretamente sua implementação no Commit 006.

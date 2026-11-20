@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -136,5 +137,45 @@ public sealed class ProductCatalogTests : IAsyncLifetime
         var response = await _client.GetAsync($"/api/products/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateProductWithInvalidRequestReturnsBadRequest()
+    {
+        var response = await _client.PostAsJsonAsync("/api/products",
+            new CreateProductRequest("", "Invalid", "X", 0m, true, -1));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.NotNull(problem);
+        Assert.True(problem.Errors.ContainsKey("Name"));
+        Assert.True(problem.Errors.ContainsKey("Category"));
+        Assert.True(problem.Errors.ContainsKey("Size"));
+        Assert.True(problem.Errors.ContainsKey("Price"));
+        Assert.True(problem.Errors.ContainsKey("StockQuantity"));
+    }
+
+    [Fact]
+    public async Task UpdateProductWithInvalidRequestReturnsBadRequest()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/products",
+            new CreateProductRequest("Tea", "Tea", "P", 8m, true, null));
+        var created = await createResponse.Content.ReadFromJsonAsync<ProductResponse>();
+        Assert.NotNull(created);
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/products/{created!.Id}",
+            new UpdateProductRequest("", "Invalid", "X", -1m, true, -1));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.NotNull(problem);
+        Assert.True(problem.Errors.ContainsKey("Name"));
+        Assert.True(problem.Errors.ContainsKey("Category"));
+        Assert.True(problem.Errors.ContainsKey("Size"));
+        Assert.True(problem.Errors.ContainsKey("Price"));
+        Assert.True(problem.Errors.ContainsKey("StockQuantity"));
     }
 }

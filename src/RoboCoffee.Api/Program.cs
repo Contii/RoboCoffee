@@ -1,4 +1,5 @@
 using RoboCoffee.Infrastructure;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddExceptionHandler<RoboCoffee.Api.Infrastructure.GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddValidatorsFromAssemblyContaining<RoboCoffee.Application.Catalog.IProductCatalogService>();
 
 var app = builder.Build();
 
