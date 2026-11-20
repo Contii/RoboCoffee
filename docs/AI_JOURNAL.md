@@ -426,3 +426,96 @@ A IA criou o `RoboCoffeeDbContext`, os mapeamentos de `Product`, `Order` e `Orde
 - Migration `20261120190438_Initial` reconhecida pelo EF Core.
 - API iniciou em `http://localhost:5128` com o DbContext registrado.
 - PostgreSQL local não estava disponível, portanto a migration não pôde ser aplicada nesta máquina.
+
+**Commit relacionado**
+
+`422d147` - `feat: configure database and initial migration`
+
+## 017 - CRUD de produtos
+
+**Contexto**
+
+Implementei a Etapa 5 do plano de commits com contratos, caso de uso, persistência e endpoints REST do catálogo.
+
+**Contribuição da IA**
+
+A IA criou contratos para produto, interface e implementação do catálogo, controller REST e erros HTTP no exception handler.
+
+**Decisões confirmadas**
+
+- CRUD implementado em `POST`, `GET`, `PUT` e `DELETE`.
+- `DELETE` desativa o produto em vez de removê-lo fisicamente.
+- Listagem possui paginação obrigatória entre página maior que zero e tamanho de 1 a 100.
+- Produtos desativados não aparecem em consultas.
+- A implementação usa um service específico de catálogo, sem repository genérico.
+- Integrações HTTP de teste usam EF Core InMemory.
+
+**Correções realizadas**
+
+- O teste inicial revelou que Npgsql e InMemory estavam registrados simultaneamente.
+- Corrigi o service provider do teste removendo a configuração Npgsql antes de registrar InMemory.
+
+**Revisões realizadas**
+
+- Build: sucesso, zero avisos e zero erros.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 8 aprovados.
+- OpenAPI: `/api/products` e `/api/products/{id}` reconhecidos.
+- API iniciou em `http://localhost:5128`.
+- Operação real com PostgreSQL não pôde ser feita sem uma instância local.
+
+## 018 - Recuperação da sessão e falha ao aplicar Keep Changes
+
+**Contexto**
+
+Na sessão anterior, `tests/RoboCoffee.IntegrationTests/ProductCatalogTests.cs` sofreu uma incompatibilidade entre alterações acumuladas no disco e o estado mostrado pelo painel de alterações do VS Code.
+
+Foram feitas duas alterações no arquivo antes da tentativa de usar o botão Keep Changes. Ao confirmar o Keep, o VS Code mostrou o erro:
+
+```text
+Could not keep changes to ProductCatalogTests.cs
+ProductCatalogTests.cs: The changes to 'ProductCatalogTests.cs' were updated after they were shown.
+Try again.
+'ProductCatalogTests.cs' changed before its changes could be kept.
+```
+
+**Diagnóstico da IA**
+
+A IA classificou o problema como uma divergência entre o conteúdo usado pelo editor para montar a ação Keep/Undo e o arquivo alterado posteriormente no disco. Os arquivos não deviam ser reconstruídos a partir de entradas stale do painel de alterações.
+
+**Ações realizadas**
+
+- Preservei o estado completo no handoff de sessão, incluindo o código final de `ProductCatalogTests.cs`.
+- Não restaurei nem aceitei alterações obsoletas do VS Code.
+- Iniciei uma nova sessão de chat.
+- Restaurar o arquivo no disco pela fonte completa registrada no handoff.
+- Validação do build e dos testes após a recuperação.
+
+**Decisão confirmada**
+
+- Quando ocorre uma divergência entre alterações do editor e alterações no disco, encerrar o chat atual e abrir uma nova sessão é uma recuperação segura.
+- O handoff deve registrar os arquivos problemáticos, o estado completo necessário para recuperação e o próximo passo do projeto.
+- O arquivo no disco e os documentos locais são a fonte de verdade.
+- Não repetir Keep/Undo stale quando o editor não conseguir reconciliar uma alteração.
+
+**Resultado**
+
+`ProductCatalogTests.cs` foi recuperado no disco e os testes continuam funcionando:
+
+- build: sucesso, 0 warnings, 0 errors;
+- testes unitários: 12 aprovados;
+- testes de integração: 8 aprovados.
+
+**Validação manual realizada**
+
+Com PostgreSQL acessível na porta 5432, a API foi iniciada em `http://localhost:5128` e validada manualmente:
+
+- `/health`: `200 OK` com `Healthy`;
+- `/swagger`: `200 OK`;
+- `/openapi/v1.json`: `200 OK`;
+- `POST /api/products`: produto criado com `201`;
+- `GET /api/products/{id}`: produto recuperado com `200`;
+- `GET /api/products?page=1&pageSize=10`: listagem paginada retornada com `200`;
+- `PUT /api/products/{id}`: dados atualizados com `200`;
+- `DELETE /api/products/{id}`: `204 No Content`;
+- consulta posterior ao produto desativado: `404 Not Found`.

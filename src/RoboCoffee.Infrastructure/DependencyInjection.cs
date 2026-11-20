@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RoboCoffee.Application.Catalog;
+using RoboCoffee.Infrastructure.Catalog;
 using RoboCoffee.Infrastructure.Persistence;
 
 namespace RoboCoffee.Infrastructure;
@@ -21,6 +23,7 @@ public static class DependencyInjection
 
         services.AddDbContext<RoboCoffeeDbContext>(options =>
             options.UseNpgsql(connectionString));
+        services.AddScoped<IProductCatalogService, ProductCatalogService>();
 
         return services;
     }

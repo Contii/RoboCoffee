@@ -61,6 +61,43 @@ public sealed class Product
     public DateTime UpdatedAtUtc { get; private set; }
     public byte[]? RowVersion { get; private set; }
 
+    public void UpdateDetails(
+        string name,
+        ProductCategory category,
+        ProductSize size,
+        decimal price,
+        bool isAvailable,
+        int? stockQuantity)
+    {
+        if (!IsActive)
+        {
+            throw new DomainException("Inactive products cannot be changed.");
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new DomainException("Product name cannot be empty.");
+        }
+
+        if (price <= 0)
+        {
+            throw new DomainException("Product price must be greater than zero.");
+        }
+
+        if (stockQuantity is < 0)
+        {
+            throw new DomainException("Stock quantity cannot be negative.");
+        }
+
+        Name = name.Trim();
+        Category = category;
+        Size = size;
+        Price = price;
+        IsAvailable = isAvailable;
+        StockQuantity = stockQuantity;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
     public void UpdatePrice(decimal price)
     {
         if (!IsActive)

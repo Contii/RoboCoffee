@@ -57,3 +57,17 @@ dotnet tool run dotnet-ef database update --project src/RoboCoffee.Infrastructur
 ```
 
 No estado atual, `database update` exige uma instância PostgreSQL acessível por `ConnectionStrings:PostgreSQL`.
+
+## Produtos
+
+Endpoints disponíveis:
+
+```text
+POST   /api/products
+GET    /api/products?page=1&pageSize=20
+GET    /api/products/{id}
+PUT    /api/products/{id}
+DELETE /api/products/{id}
+```
+
+`DELETE` usa exclusão lógica. Produtos desativados deixam de aparecer nas consultas.
