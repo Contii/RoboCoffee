@@ -71,6 +71,42 @@ public sealed class OrderService : IOrderService
         return Map(order);
     }
 
+    public async Task<OrderResponse> AdvanceStatusAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var order = await _context.Orders
+            .Include(candidate => candidate.Items)
+            .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken);
+
+        if (order is null)
+        {
+            throw new OrderNotFoundException(id);
+        }
+
+        order.AdvanceStatus();
+        await _context.SaveChangesAsync(cancellationToken);
+        return Map(order);
+    }
+
+    public async Task<OrderResponse> CancelAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var order = await _context.Orders
+            .Include(candidate => candidate.Items)
+            .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken);
+
+        if (order is null)
+        {
+            throw new OrderNotFoundException(id);
+        }
+
+        order.Cancel();
+        await _context.SaveChangesAsync(cancellationToken);
+        return Map(order);
+    }
+
     private static OrderResponse Map(Order order)
     {
         return new OrderResponse(

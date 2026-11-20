@@ -644,3 +644,33 @@ A IA acrescentou um teste de integração que envia quantidade zero e confirmou 
 - Validação manual:
   - quantidade zero: `400`;
   - produto indisponível: `409`.
+
+## 023 - Fluxo de situação e cancelamento de pedidos
+
+**Contexto**
+
+Implementei os endpoints e o caso de uso necessários para avançar e cancelar pedidos pela API.
+
+**Contribuição da IA**
+
+A IA adicionou `OrderNotFoundException`, métodos de avanço e cancelamento no service, endpoints REST e testes de integração para estados válidos e inválidos.
+
+**Decisões confirmadas**
+
+- Fluxo: `Received -> Preparing -> Ready -> Delivered`.
+- Cancelamento permitido apenas em `Received`.
+- Avançar pedido entregue ou cancelado gera `409 Conflict`.
+- Cancelar pedido fora de `Received` gera `409 Conflict`.
+- Pedido inexistente gera `404 Not Found`.
+- Estados continuam sendo alterados pelos métodos de domínio.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 20 aprovados.
+- Validação manual:
+  - `Received -> Preparing -> Ready -> Delivered`;
+  - avanço após `Delivered`: `409`;
+  - cancelamento em `Received`: `Cancelled`;
+  - cancelamento fora de `Received`: `409`.

@@ -154,6 +154,93 @@ public sealed class OrderCreationTests : IAsyncLifetime
         Assert.Equal(24m, persistedOrder.Total);
     }
 
+    [Fact]
+    public async Task AdvanceStatusFollowsReceivedPreparingReadyDeliveredWorkflow()
+    {
+        var order = await CreateOrderAsync();
+
+        var preparing = await _client.PostAsync(
+            $"/api/orders/{order.Id}/advance",
+            null);
+        Assert.Equal(HttpStatusCode.OK, preparing.StatusCode);
+        Assert.Equal("Preparing", (await preparing.Content.ReadFromJsonAsync<OrderResponse>())?.Status);
+
+        var ready = await _client.PostAsync(
+            $"/api/orders/{order.Id}/advance",
+            null);
+        Assert.Equal(HttpStatusCode.OK, ready.StatusCode);
+        Assert.Equal("Ready", (await ready.Content.ReadFromJsonAsync<OrderResponse>())?.Status);
+
+        var delivered = await _client.PostAsync(
+            $"/api/orders/{order.Id}/advance",
+            null);
+        Assert.Equal(HttpStatusCode.OK, delivered.StatusCode);
+        Assert.Equal("Delivered", (await delivered.Content.ReadFromJsonAsync<OrderResponse>())?.Status);
+
+        var invalid = await _client.PostAsync(
+            $"/api/orders/{order.Id}/advance",
+            null);
+        Assert.Equal(HttpStatusCode.Conflict, invalid.StatusCode);
+    }
+
+    [Fact]
+    public async Task CancelOrderSucceedsOnlyInReceivedStatus()
+    {
+        var order = await CreateOrderAsync();
+
+        var cancel = await _client.PostAsync(
+            $"/api/orders/{order.Id}/cancel",
+            null);
+        Assert.Equal(HttpStatusCode.OK, cancel.StatusCode);
+        Assert.Equal("Cancelled", (await cancel.Content.ReadFromJsonAsync<OrderResponse>())?.Status);
+
+        var preparingOrder = await CreateOrderAsync();
+        var advance = await _client.PostAsync(
+            $"/api/orders/{preparingOrder.Id}/advance",
+            null);
+        Assert.Equal(HttpStatusCode.OK, advance.StatusCode);
+
+        var invalidCancel = await _client.PostAsync(
+            $"/api/orders/{preparingOrder.Id}/cancel",
+            null);
+        Assert.Equal(HttpStatusCode.Conflict, invalidCancel.StatusCode);
+    }
+
+    [Fact]
+    public async Task AdvanceUnknownOrderReturnsNotFound()
+    {
+        var response = await _client.PostAsync(
+            $"/api/orders/{Guid.NewGuid()}/advance",
+            null);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CancelUnknownOrderReturnsNotFound()
+    {
+        var response = await _client.PostAsync(
+            $"/api/orders/{Guid.NewGuid()}/cancel",
+            null);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private async Task<OrderResponse> CreateOrderAsync()
+    {
+        var product = await CreateProductAsync("Espresso", 12m, true);
+        var response = await _client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(
+            "Maria",
+            null,
+            null,
+            [new CreateOrderItemRequest(product.Id, 1, null)]));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var order = await response.Content.ReadFromJsonAsync<OrderResponse>();
+        Assert.NotNull(order);
+        return order;
+    }
+
     private async Task<ProductResponse> CreateProductAsync(
         string name,
         decimal price,

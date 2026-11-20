@@ -81,6 +81,8 @@ Endpoints disponíveis:
 
 ```text
 POST /api/orders
+POST /api/orders/{id}/advance
+POST /api/orders/{id}/cancel
 ```
 
 O checkout cria o pedido, calcula o total a partir dos itens e preserva nome e preço atual dos produtos nos snapshots.
@@ -92,3 +94,6 @@ Na criação de pedidos:
 - produtos indisponíveis ou inativos não podem ser pedidos;
 - quantidade inválida retorna `400 Bad Request`;
 - produto indisponível retorna `409 Conflict`.
+
+Os pedidos avançam por `Received -> Preparing -> Ready -> Delivered`.
+O cancelamento só é permitido em `Received`; transições inválidas retornam `409 Conflict`.

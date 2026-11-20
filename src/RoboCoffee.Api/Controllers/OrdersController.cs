@@ -33,4 +33,28 @@ public sealed class OrdersController : ControllerBase
         var order = await _orders.CreateAsync(request, cancellationToken);
         return Created($"/api/orders/{order.Id}", order);
     }
+
+    [HttpPost("{id:guid}/advance")]
+    [ProducesResponseType<OrderResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<OrderResponse>> AdvanceStatus(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var order = await _orders.AdvanceStatusAsync(id, cancellationToken);
+        return Ok(order);
+    }
+
+    [HttpPost("{id:guid}/cancel")]
+    [ProducesResponseType<OrderResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<OrderResponse>> Cancel(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var order = await _orders.CancelAsync(id, cancellationToken);
+        return Ok(order);
+    }
 }
