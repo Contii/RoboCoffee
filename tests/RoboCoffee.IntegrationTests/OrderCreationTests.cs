@@ -108,6 +108,38 @@ public sealed class OrderCreationTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
+    [Fact]
+    public async Task ChangingProductDoesNotRecalculatePersistedOrderSnapshot()
+    {
+        var product = await CreateProductAsync("Espresso", 12m, true);
+
+        var createResponse = await _client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(
+            "Maria",
+            null,
+            null,
+            [new CreateOrderItemRequest(product.Id, 2, null)]));
+
+        var order = await createResponse.Content.ReadFromJsonAsync<OrderResponse>();
+        Assert.NotNull(order);
+
+        var updateResponse = await _client.PutAsJsonAsync(
+            $"/api/products/{product.Id}",
+            new UpdateProductRequest("Espresso Especial", "Coffee", "P", 20m, true, null));
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<RoboCoffeeDbContext>();
+        var persistedOrder = await context.Orders
+            .Include(candidate => candidate.Items)
+            .SingleAsync(candidate => candidate.Id == order.Id);
+
+        var persistedItem = Assert.Single(persistedOrder.Items);
+        Assert.Equal("Espresso", persistedItem.ProductNameSnapshot);
+        Assert.Equal(12m, persistedItem.UnitPriceSnapshot);
+        Assert.Equal(24m, persistedItem.Subtotal);
+        Assert.Equal(24m, persistedOrder.Total);
+    }
+
     private async Task<ProductResponse> CreateProductAsync(
         string name,
         decimal price,

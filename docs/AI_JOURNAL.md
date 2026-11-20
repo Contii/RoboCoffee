@@ -589,3 +589,27 @@ A IA criou os contratos `CreateOrderRequest`, `CreateOrderItemRequest`, `OrderRe
   - total calculado: `24.00`;
   - preço unitário snapshot: `12.00`;
   - subtotal: `24.00`.
+
+## 021 - Snapshot histórico de preço e nome do produto
+
+**Contexto**
+
+A Etapa 8 fechou formalmente a garantia de snapshot iniciada pela criação do pedido na Etapa 7.
+
+**Contribuição da IA**
+
+A IA adicionou um teste de integração que cria um pedido, altera o nome e o preço do produto e consulta o pedido persistido diretamente no `RoboCoffeeDbContext`.
+
+**Decisões confirmadas**
+
+- `OrderItem` mantém `ProductNameSnapshot` e `UnitPriceSnapshot`.
+- Alterar o catálogo não recalcula itens ou totais existentes.
+- O teste prova persistência, não apenas resposta em memória.
+- A implementação de domínio já copiava os dados na criação do pedido.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 12 aprovados.
+- Testes de integração: 15 aprovados.
+- Um teste específico confirmou que nome e preço originais permanecem persistidos após a atualização do produto.
