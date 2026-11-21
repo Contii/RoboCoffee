@@ -729,3 +729,32 @@ A IA criou políticas Polly para timeout de cinco segundos, dois retries com bac
 - Testes unitários: 17 aprovados.
 - Testes de integração: 23 aprovados.
 - Testes específicos confirmam três tentativas em retry e abertura do circuito após cinco falhas.
+
+## 026 - Serilog e correlation ID
+
+**Contexto**
+
+Implementei o Commit 13 com logs estruturados do Serilog e um correlation ID por requisição.
+
+**Contribuição da IA**
+
+A IA configurou Serilog no host, criou `CorrelationIdMiddleware`, incluiu `CorrelationId` nos logs de requisição e adicionou testes de integração para geração, preservação e validação do tamanho do header.
+
+**Decisões confirmadas**
+
+- Header usado: `X-Correlation-ID`.
+- Header fornecido pelo cliente é preservado quando possui até 128 caracteres.
+- Header ausente ou excessivamente longo gera um GUID.
+- O mesmo valor é devolvido na resposta.
+- Serilog usa console sink e `LogContext`.
+- Logs de requisição exibem método, rota, status, duração e correlation ID.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 17 aprovados.
+- Testes de integração: 26 aprovados.
+- Validação manual:
+  - `/health` respondeu `200`;
+  - header informado foi devolvido como `manual-log-check-123`;
+  - console exibiu `CorrelationId=manual-log-check-123`.

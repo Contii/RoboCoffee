@@ -1,7 +1,20 @@
 using RoboCoffee.Infrastructure;
 using FluentValidation;
+using Serilog;
+using Serilog.Events;
+using RoboCoffee.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .WriteTo.Console();
+});
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -23,6 +36,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate =
+        "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms CorrelationId={CorrelationId}";
+});
 app.UseExceptionHandler();
 app.UseAuthorization();
 

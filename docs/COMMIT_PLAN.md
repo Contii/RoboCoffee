@@ -53,7 +53,7 @@ Nenhum comando Git deve ser executado antes de eu revisar o comando e o efeito e
 | 10 | ✅ Implementar transições de situação e cancelamento | `feat: add order status workflow` |
 | 11 | ✅ Integrar consulta de endereço ViaCEP | `feat: integrate address lookup with viacep` |
 | 12 | ✅ Adicionar timeout, retry e circuit breaker | `feat: add resilient address integration` |
-| 13 | Configurar Serilog e correlation ID | `feat: add structured logging` |
+| 13 | ✅ Configurar Serilog e correlation ID | `feat: add structured logging` |
 | 14 | Adicionar Dockerfile e Docker Compose | `chore: add api and postgres containers` |
 | 15 | Adicionar testes unitários das regras | `test: cover order domain rules` |
 | 16 | Adicionar testes de integração da API e PostgreSQL | `test: cover api and persistence integration` |
