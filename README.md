@@ -107,3 +107,5 @@ GET /api/addresses/{postalCode}
 ```
 
 CEP com oito dígitos retorna `200` com os dados confirmados. CEP inválido retorna `400`; CEP inexistente ou falha externa retorna `404`, sem impedir a criação de pedidos.
+
+O cliente ViaCEP usa timeout de 5 segundos, até dois retries com backoff exponencial e circuit breaker após cinco falhas transitórias.

@@ -703,3 +703,29 @@ A IA criou `IAddressLookupService`, o cliente tipado `ViaCepAddressLookupService
 - Validação manual:
   - `01001000`: `200`, endereço confirmado;
   - `123`: `400`, CEP com oito dígitos esperado.
+
+## 025 - Resiliência da integração ViaCEP
+
+**Contexto**
+
+Implementei o Commit 12 com timeout, retry e circuit breaker no cliente HTTP do ViaCEP.
+
+**Contribuição da IA**
+
+A IA criou políticas Polly para timeout de cinco segundos, dois retries com backoff exponencial e circuit breaker após cinco falhas transitórias.
+
+**Decisões confirmadas**
+
+- Erros transitórios e timeout acionam resiliência HTTP.
+- Retry efetua até três tentativas totais, com espera de um e dois segundos.
+- Circuit breaker abre por 30 segundos após cinco falhas.
+- Timeout do `HttpClient` permanece em dez segundos.
+- Timeout e circuit breaker aberto são tratados como falha externa e retornam fallback `null`.
+- A implementação não impede criação de pedidos quando ViaCEP falha.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 17 aprovados.
+- Testes de integração: 23 aprovados.
+- Testes específicos confirmam três tentativas em retry e abertura do circuito após cinco falhas.

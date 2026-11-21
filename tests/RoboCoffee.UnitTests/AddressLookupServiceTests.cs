@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using RoboCoffee.Application.Integrations;
 using RoboCoffee.Infrastructure.Integrations;
+using Polly.CircuitBreaker;
 
 namespace RoboCoffee.UnitTests;
 
@@ -71,6 +72,37 @@ public sealed class AddressLookupServiceTests
         var address = await service.LookupAsync("01001000", CancellationToken.None);
 
         Assert.Null(address);
+    }
+
+    [Fact]
+    public async Task RetryPolicyAttemptsThreeTimesOnTransientFailure()
+    {
+        var attempts = 0;
+        var policy = AddressLookupResiliencePolicies.CreateRetryPolicy();
+
+        await policy.ExecuteAsync(() =>
+        {
+            attempts++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        });
+
+        Assert.Equal(3, attempts);
+    }
+
+    [Fact]
+    public async Task CircuitBreakerOpensAfterFiveTransientFailures()
+    {
+        var policy = AddressLookupResiliencePolicies.CreateCircuitBreakerPolicy();
+
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            await policy.ExecuteAsync(() =>
+                Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
+        }
+
+        await Assert.ThrowsAsync<BrokenCircuitException<HttpResponseMessage>>(() =>
+            policy.ExecuteAsync(() =>
+                Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
     }
 
     private sealed class StubHttpMessageHandler(

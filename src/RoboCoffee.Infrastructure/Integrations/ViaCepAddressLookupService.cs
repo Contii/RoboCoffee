@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 using RoboCoffee.Application.Integrations;
 using RoboCoffee.Contracts.Integrations;
 
@@ -50,6 +52,14 @@ public sealed class ViaCepAddressLookupService : IAddressLookupService
             return null;
         }
         catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (TimeoutRejectedException)
+        {
+            return null;
+        }
+        catch (BrokenCircuitException)
         {
             return null;
         }

@@ -30,10 +30,13 @@ public static class DependencyInjection
         services.AddScoped<IProductCatalogService, ProductCatalogService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddHttpClient<IAddressLookupService, ViaCepAddressLookupService>(client =>
-        {
-            client.BaseAddress = new Uri("https://viacep.com.br/ws/");
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
+            {
+                client.BaseAddress = new Uri("https://viacep.com.br/ws/");
+                client.Timeout = TimeSpan.FromSeconds(10);
+            })
+            .AddPolicyHandler(AddressLookupResiliencePolicies.CreateTimeoutPolicy())
+            .AddPolicyHandler(AddressLookupResiliencePolicies.CreateRetryPolicy())
+            .AddPolicyHandler(AddressLookupResiliencePolicies.CreateCircuitBreakerPolicy());
 
         return services;
     }
