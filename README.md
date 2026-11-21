@@ -97,3 +97,13 @@ Na criação de pedidos:
 
 Os pedidos avançam por `Received -> Preparing -> Ready -> Delivered`.
 O cancelamento só é permitido em `Received`; transições inválidas retornam `409 Conflict`.
+
+## Consulta de endereço
+
+CEP pode ser consultado pelo ViaCEP:
+
+```text
+GET /api/addresses/{postalCode}
+```
+
+CEP com oito dígitos retorna `200` com os dados confirmados. CEP inválido retorna `400`; CEP inexistente ou falha externa retorna `404`, sem impedir a criação de pedidos.

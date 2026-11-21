@@ -674,3 +674,32 @@ A IA adicionou `OrderNotFoundException`, métodos de avanço e cancelamento no s
   - avanço após `Delivered`: `409`;
   - cancelamento em `Received`: `Cancelled`;
   - cancelamento fora de `Received`: `409`.
+
+## 024 - Integração inicial com ViaCEP
+
+**Contexto**
+
+Implementei o Commit 11 com a consulta de endereço por CEP e uma interface própria da aplicação.
+
+**Contribuição da IA**
+
+A IA criou `IAddressLookupService`, o cliente tipado `ViaCepAddressLookupService`, o contrato `AddressLookupResponse`, o endpoint `GET /api/addresses/{postalCode}` e testes unitários e de integração.
+
+**Decisões confirmadas**
+
+- ViaCEP é chamada por um `HttpClient` tipado registrado no DI.
+- CEP é normalizado para oito dígitos.
+- Resposta externa é convertida para um contrato próprio da aplicação.
+- CEP inválido retorna `400`.
+- CEP inexistente ou falha externa retorna `404` sem dados sensíveis.
+- Timeout básico foi definido em 10 segundos.
+- Retry, circuit breaker e cache ficam para a Etapa 12.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 15 aprovados.
+- Testes de integração: 23 aprovados.
+- Validação manual:
+  - `01001000`: `200`, endereço confirmado;
+  - `123`: `400`, CEP com oito dígitos esperado.

@@ -41,17 +41,17 @@ Nenhum comando Git deve ser executado antes de eu revisar o comando e o efeito e
 
 | Etapa | Trabalho | Commit principal |
 |---:|---|---|
-| 1 | ✅ Criar solution, projetos e estrutura inicial | `chore: initialize solution structure` |
-| 2 | ✅ Configurar Swagger, health checks e tratamento global de erros | `feat: configure api infrastructure` |
-| 3 | ✅ Modelar `Product`, `Order`, `OrderItem` e enumerações | `feat: add catalog and order domain models` |
-| 4 | ✅ Configurar EF Core, DbContext e migrations iniciais | `feat: configure database and initial migration` |
-| 5 | ✅ Implementar CRUD de produtos | `feat: add product catalog endpoints` |
-| 6 | ✅ Implementar FluentValidation e ProblemDetails | `feat: validate product requests` |
-| 7 | ✅ Implementar criação de pedidos e cálculo do total | `feat: add order creation` |
-| 8 | ✅ Implementar snapshot do preço e dados do produto no item | `feat: preserve product price in orders` |
-| 9 | ✅ Implementar indisponibilidade e quantidade mínima | `fix: enforce order creation rules` |
+| 01 | ✅ Criar solution, projetos e estrutura inicial | `chore: initialize solution structure` |
+| 02 | ✅ Configurar Swagger, health checks e tratamento global de erros | `feat: configure api infrastructure` |
+| 03 | ✅ Modelar `Product`, `Order`, `OrderItem` e enumerações | `feat: add catalog and order domain models` |
+| 04 | ✅ Configurar EF Core, DbContext e migrations iniciais | `feat: configure database and initial migration` |
+| 05 | ✅ Implementar CRUD de produtos | `feat: add product catalog endpoints` |
+| 06 | ✅ Implementar FluentValidation e ProblemDetails | `feat: validate product requests` |
+| 07 | ✅ Implementar criação de pedidos e cálculo do total | `feat: add order creation` |
+| 08 | ✅ Implementar snapshot do preço e dados do produto no item | `feat: preserve product price in orders` |
+| 09 | ✅ Implementar indisponibilidade e quantidade mínima | `fix: enforce order creation rules` |
 | 10 | ✅ Implementar transições de situação e cancelamento | `feat: add order status workflow` |
-| 11 | Integrar consulta de endereço ViaCEP | `feat: integrate address lookup with viacep` |
+| 11 | ✅ Integrar consulta de endereço ViaCEP | `feat: integrate address lookup with viacep` |
 | 12 | Adicionar timeout, retry e circuit breaker | `feat: add resilient address integration` |
 | 13 | Configurar Serilog e correlation ID | `feat: add structured logging` |
 | 14 | Adicionar Dockerfile e Docker Compose | `chore: add api and postgres containers` |
