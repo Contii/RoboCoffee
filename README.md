@@ -139,3 +139,68 @@ O cliente ViaCEP usa timeout de 5 segundos, até dois retries com backoff expone
 A API usa Serilog para logs estruturados no console.
 
 Cada requisição aceita o header opcional `X-Correlation-ID`. Quando informado, o mesmo valor é usado no log e devolvido na resposta. Quando ausente ou maior que 128 caracteres, a API gera um GUID.
+
+## Arquitetura
+
+O projeto usa monólito modular em camadas:
+
+- `RoboCoffee.Api`: controllers, middleware, Swagger, health checks e composição;
+- `RoboCoffee.Application`: casos de uso, interfaces e validadores;
+- `RoboCoffee.Domain`: entidades, invariantes e máquina de estados;
+- `RoboCoffee.Infrastructure`: EF Core, PostgreSQL, ViaCEP e configurações externas;
+- `RoboCoffee.Contracts`: DTOs de entrada e saída.
+
+Regras críticas não ficam nos controllers. EF Core é usado diretamente por services específicos; o projeto não usa repository genérico, CQRS ou Event Sourcing.
+
+Decisões técnicas e limites estão documentados em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Testes
+
+```powershell
+dotnet test
+```
+
+A solução possui testes unitários e de integração:
+
+- regras de domínio;
+- criação e persistência de produtos;
+- criação e persistência de pedidos;
+- snapshots e cálculo do total;
+- estados e cancelamento;
+- FluentValidation e ProblemDetails;
+- health, Swagger e correlation ID;
+- ViaCEP com respostas simuladas;
+- PostgreSQL real por Testcontainers.
+
+Testcontainers exige Docker disponível.
+
+## Funcionalidades obrigatórias concluídas
+
+- solution .NET 10 organizada por responsabilidade;
+- Swagger, OpenAPI e health check;
+- entidades rich domain para catálogo e pedidos;
+- EF Core com PostgreSQL e migrations;
+- CRUD de produtos com soft delete;
+- FluentValidation e respostas ProblemDetails;
+- criação de pedidos e cálculo do total;
+- snapshots históricos de nome e preço;
+- validação de disponibilidade e quantidade;
+- fluxo de status e cancelamento;
+- consulta ViaCEP com fallback;
+- timeout, retry e circuit breaker;
+- Serilog e X-Correlation-ID;
+- Dockerfile e Docker Compose;
+- testes unitários e de integração;
+- documentação técnica e ensaio privado.
+
+## Limites atuais
+
+Os itens abaixo pertencem ao plano “Vá Além” e ainda não fazem parte do MVP:
+
+- controle de estoque limitado e concorrência;
+- Idempotency-Key;
+- JWT e políticas por cargo;
+- Outbox para emissão fiscal;
+- cache por CEP;
+- GitHub Actions;
+- revisão final de segurança e performance.

@@ -842,3 +842,28 @@ A IA adicionou `Testcontainers.PostgreSql`, uma fixture com PostgreSQL 16 e test
 - Testes unitários: 28 aprovados.
 - Testes de integração: 28 aprovados.
 - Teste PostgreSQL específico: 2 aprovados.
+
+## 030 - Finalização da documentação obrigatória
+
+**Contexto**
+
+Implementei o Commit 17 consolidando a documentação humana do MVP no README.
+
+**Contribuição da IA**
+
+A IA organizou arquitetura, comandos locais e Docker, cobertura de testes, funcionalidades concluídas e limites reais do projeto.
+
+**Decisões confirmadas**
+
+- O README descreve apenas recursos implementados e validações reais.
+- Docker e PostgreSQL são apresentados como execução local.
+- Testcontainers é indicado como pré-requisito com Docker disponível.
+- Itens “Vá Além” permanecem claramente separados do MVP.
+- O SDK confirmado para o projeto é .NET 10.0.404.
+
+**Revisões realizadas**
+
+- SDK: 10.0.404.
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 28 aprovados.
+- Testes de integração: 28 aprovados.

@@ -57,7 +57,7 @@ Nenhum comando Git deve ser executado antes de eu revisar o comando e o efeito e
 | 14 | ✅ Adicionar Dockerfile e Docker Compose | `chore: add api and postgres containers` |
 | 15 | ✅ Adicionar testes unitários das regras | `test: cover order domain rules` |
 | 16 | ✅ Adicionar testes de integração da API e PostgreSQL | `test: cover api and persistence integration` |
-| 17 | Finalizar README obrigatório | `docs: document setup and mandatory features` |
+| 17 | ✅ Finalizar README obrigatório | `docs: document setup and mandatory features` |
 
 ## Commits menores dentro das etapas
 
