@@ -789,3 +789,30 @@ A IA criou Dockerfile multi-stage, `.dockerignore`, `.env.example`, `compose.yam
 - `/swagger`: `200`;
 - migrations: tabelas criadas;
 - `POST /api/products`: `201` com persistência no PostgreSQL.
+
+## 028 - Cobertura unitária das regras de domínio
+
+**Contexto**
+
+Implementei o Commit 15 ampliando os testes unitários das regras obrigatórias do MVP.
+
+**Contribuição da IA**
+
+A IA adicionou testes em teoria para cancelamento em todos os estados não permitidos e para avanço em estados terminal ou cancelado.
+
+**Decisões confirmadas**
+
+- Cancelamento é permitido somente em `Received`.
+- `Delivered` e `Cancelled` não podem avançar.
+- Não podem ser adicionados itens após o pedido sair de `Received`.
+- Produto inativo não pode ser adicionado.
+- Produto indisponível continua rejeitado.
+- Quantidade menor que um continua rejeitada.
+- Snapshot e total são mantidos pelos testes existentes.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 28 aprovados.
+- Testes de integração: 26 aprovados.
+- Nenhuma alteração de produção foi necessária.

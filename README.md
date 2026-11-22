@@ -47,6 +47,10 @@ Copie `.env.example` para `.env` para substituir as credenciais locais. O arquiv
 
 No ambiente `Development`, a API aplica as migrations EF Core automaticamente na inicialização.
 
+## Cobertura de regras
+
+Os testes unitários cobrem produto indisponível ou inativo, pedido vazio, quantidade mínima, snapshot de preço, total, cancelamento e todas as transições inválidas da máquina de estados.
+
 ## API
 
 Durante o desenvolvimento:

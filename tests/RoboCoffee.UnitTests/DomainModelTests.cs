@@ -130,6 +130,54 @@ public sealed class DomainModelTests
         Assert.Throws<DomainException>(() => preparingOrder.Cancel());
     }
 
+    [Theory]
+    [InlineData(OrderStatus.Preparing)]
+    [InlineData(OrderStatus.Ready)]
+    [InlineData(OrderStatus.Delivered)]
+    [InlineData(OrderStatus.Cancelled)]
+    public void OnlyReceivedOrderCanBeCancelledForEveryRestrictedStatus(
+        OrderStatus targetStatus)
+    {
+        var order = CreateOrderInStatus(targetStatus);
+
+        Assert.Throws<DomainException>(() => order.Cancel());
+    }
+
+    [Theory]
+    [InlineData(OrderStatus.Delivered)]
+    [InlineData(OrderStatus.Cancelled)]
+    public void InvalidAdvanceStatusIsRejected(
+        OrderStatus targetStatus)
+    {
+        var order = CreateOrderInStatus(targetStatus);
+
+        Assert.Throws<DomainException>(() => order.AdvanceStatus());
+    }
+
+    [Fact]
+    public void InactiveProductCannotBeAdded()
+    {
+        var product = CreateAvailableProduct();
+        product.Deactivate();
+        var order = Order.Create(Guid.NewGuid(), "Maria", null, null);
+
+        Assert.Throws<DomainException>(() => order.AddItem(product, 1));
+    }
+
+    [Theory]
+    [InlineData(OrderStatus.Preparing)]
+    [InlineData(OrderStatus.Ready)]
+    [InlineData(OrderStatus.Delivered)]
+    [InlineData(OrderStatus.Cancelled)]
+    public void ItemsCannotBeAddedAfterReceivedStatus(
+        OrderStatus targetStatus)
+    {
+        var order = CreateOrderInStatus(targetStatus);
+        var product = CreateAvailableProduct();
+
+        Assert.Throws<DomainException>(() => order.AddItem(product, 1));
+    }
+
     private static Product CreateAvailableProduct()
     {
         return new Product(
@@ -145,6 +193,37 @@ public sealed class DomainModelTests
         var product = CreateAvailableProduct();
         var order = Order.Create(Guid.NewGuid(), "Maria", null, null);
         order.AddItem(product, 1);
+        return order;
+    }
+
+    private static Order CreateOrderInStatus(OrderStatus targetStatus)
+    {
+        var order = CreateOrderWithItem();
+
+        return targetStatus switch
+        {
+            OrderStatus.Received => order,
+            OrderStatus.Preparing => AdvanceOrder(order, 1),
+            OrderStatus.Ready => AdvanceOrder(order, 2),
+            OrderStatus.Delivered => AdvanceOrder(order, 3),
+            OrderStatus.Cancelled => CancelOrder(order),
+            _ => throw new ArgumentOutOfRangeException(nameof(targetStatus))
+        };
+    }
+
+    private static Order AdvanceOrder(Order order, int advances)
+    {
+        for (var index = 0; index < advances; index++)
+        {
+            order.AdvanceStatus();
+        }
+
+        return order;
+    }
+
+    private static Order CancelOrder(Order order)
+    {
+        order.Cancel();
         return order;
     }
 }
