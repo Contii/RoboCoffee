@@ -816,3 +816,29 @@ A IA adicionou testes em teoria para cancelamento em todos os estados não permi
 - Testes unitários: 28 aprovados.
 - Testes de integração: 26 aprovados.
 - Nenhuma alteração de produção foi necessária.
+
+## 029 - Integração da API com PostgreSQL via Testcontainers
+
+**Contexto**
+
+Implementei o Commit 16 com testes que executam PostgreSQL real em container e validam migrations e persistência pela API.
+
+**Contribuição da IA**
+
+A IA adicionou `Testcontainers.PostgreSql`, uma fixture com PostgreSQL 16 e testes de criação de produto/pedido e das tabelas esperadas.
+
+**Decisões confirmadas**
+
+- Testcontainers exige Docker disponível no ambiente de execução.
+- A imagem usada nos testes é `postgres:16`.
+- O host remove opções Npgsql e InMemory antes de registrar o PostgreSQL real.
+- A migration é aplicada no banco criado pelo container.
+- Um teste cria produto e pedido pela API e consulta os registros pelo DbContext.
+- Outro teste confirma `products`, `orders` e `order_items` no schema público.
+
+**Revisões realizadas**
+
+- Build: sucesso, 0 warnings, 0 errors.
+- Testes unitários: 28 aprovados.
+- Testes de integração: 28 aprovados.
+- Teste PostgreSQL específico: 2 aprovados.

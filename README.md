@@ -51,6 +51,12 @@ No ambiente `Development`, a API aplica as migrations EF Core automaticamente na
 
 Os testes unitários cobrem produto indisponível ou inativo, pedido vazio, quantidade mínima, snapshot de preço, total, cancelamento e todas as transições inválidas da máquina de estados.
 
+Os testes de integração cobrem API com EF Core InMemory e persistência real PostgreSQL por Testcontainers. Para executar PostgreSQL real, Docker precisa estar disponível:
+
+```powershell
+dotnet test tests/RoboCoffee.IntegrationTests/RoboCoffee.IntegrationTests.csproj
+```
+
 ## API
 
 Durante o desenvolvimento:
