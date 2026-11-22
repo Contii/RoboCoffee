@@ -33,6 +33,20 @@ dotnet build
 dotnet test
 ```
 
+## Docker
+
+Com Docker Compose:
+
+```powershell
+docker compose up --build
+```
+
+A API ficará disponível em `http://localhost:8080`, PostgreSQL na porta pública `5433` e o Swagger em `http://localhost:8080/swagger`.
+
+Copie `.env.example` para `.env` para substituir as credenciais locais. O arquivo `.env` não é versionado.
+
+No ambiente `Development`, a API aplica as migrations EF Core automaticamente na inicialização.
+
 ## API
 
 Durante o desenvolvimento:

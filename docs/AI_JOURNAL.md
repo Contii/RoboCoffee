@@ -758,3 +758,34 @@ A IA configurou Serilog no host, criou `CorrelationIdMiddleware`, incluiu `Corre
   - `/health` respondeu `200`;
   - header informado foi devolvido como `manual-log-check-123`;
   - console exibiu `CorrelationId=manual-log-check-123`.
+
+## 027 - Dockerfile e Docker Compose
+
+**Contexto**
+
+Implementei o Commit 14 com uma imagem da API, Compose para API/PostgreSQL e configuração local versionada por exemplo.
+
+**Contribuição da IA**
+
+A IA criou Dockerfile multi-stage, `.dockerignore`, `.env.example`, `compose.yaml`, migração automática em Development e documentação dos comandos Docker.
+
+**Decisões confirmadas**
+
+- API publicada na porta `8080`;
+- PostgreSQL publicado na porta pública `5433` para evitar conflito com PostgreSQL local;
+- PostgreSQL interno continua na porta `5432`;
+- volumes persistem dados de PostgreSQL;
+- Compose aguarda o health check do banco antes de iniciar a API;
+- migrations são aplicadas automaticamente apenas em Development;
+- `.env` local fica fora do Git.
+
+**Revisões realizadas**
+
+- `docker compose config`: configuração válida;
+- build da imagem: sucesso;
+- PostgreSQL Compose: healthy;
+- API Compose: started;
+- `/health`: `200`;
+- `/swagger`: `200`;
+- migrations: tabelas criadas;
+- `POST /api/products`: `201` com persistência no PostgreSQL.

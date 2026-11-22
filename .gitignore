@@ -428,3 +428,4 @@ FodyWeavers.xsd
 # Private planning artifacts
 .context/
 *.pdf
+!.env.example

@@ -1,0 +1,10 @@
+**/.git
+**/.vs
+**/.vscode
+**/.context
+**/bin
+**/obj
+**/TestResults
+**/*.log
+*.slnx.user
+*.env

@@ -3,6 +3,8 @@ using FluentValidation;
 using Serilog;
 using Serilog.Events;
 using RoboCoffee.Api.Middleware;
+using Microsoft.EntityFrameworkCore;
+using RoboCoffee.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,16 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<RoboCoffee.Application.Catalog.IProductCatalogService>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<RoboCoffeeDbContext>();
+    if (dbContext.Database.IsRelational())
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {
