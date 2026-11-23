@@ -16,9 +16,11 @@ public sealed class OrderCreationTests : IAsyncLifetime
 {
     private WebApplicationFactory<Program> _factory = null!;
     private HttpClient _client = null!;
+    private string _databaseName = null!;
 
     public async Task InitializeAsync()
     {
+        _databaseName = $"RoboCoffeeOrderTests-{Guid.NewGuid()}";
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -30,7 +32,7 @@ public sealed class OrderCreationTests : IAsyncLifetime
                     services.RemoveAll<IDbContextOptionsConfiguration<RoboCoffeeDbContext>>();
 
                     services.AddDbContext<RoboCoffeeDbContext>(options =>
-                        options.UseInMemoryDatabase("RoboCoffeeOrderTests"));
+                        options.UseInMemoryDatabase(_databaseName));
                 });
             });
 
@@ -152,6 +154,53 @@ public sealed class OrderCreationTests : IAsyncLifetime
         Assert.Equal(12m, persistedItem.UnitPriceSnapshot);
         Assert.Equal(24m, persistedItem.Subtotal);
         Assert.Equal(24m, persistedOrder.Total);
+    }
+
+    [Fact]
+    public async Task GetOrderByIdReturnsCompleteOrder()
+    {
+        var order = await CreateOrderAsync();
+
+        var response = await _client.GetAsync($"/api/orders/{order.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var found = await response.Content.ReadFromJsonAsync<OrderResponse>();
+        Assert.NotNull(found);
+        Assert.Equal(order.Id, found.Id);
+        Assert.Single(found.Items);
+    }
+
+    [Fact]
+    public async Task GetUnknownOrderByIdReturnsNotFound()
+    {
+        var response = await _client.GetAsync($"/api/orders/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetPagedOrdersReturnsPagination()
+    {
+        await CreateOrderAsync();
+        await CreateOrderAsync();
+
+        var response = await _client.GetAsync("/api/orders?page=1&pageSize=10");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<PagedResult<OrderResponse>>();
+        Assert.NotNull(page);
+        Assert.Equal(1, page.Page);
+        Assert.Equal(10, page.PageSize);
+        Assert.Equal(2, page.TotalItems);
+        Assert.Equal(2, page.Items.Count);
+    }
+
+    [Fact]
+    public async Task GetPagedOrdersRejectsInvalidPagination()
+    {
+        var response = await _client.GetAsync("/api/orders?page=0&pageSize=101");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

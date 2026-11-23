@@ -1,5 +1,11 @@
 using System.Net;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using RoboCoffee.Infrastructure.Persistence;
 
 namespace RoboCoffee.IntegrationTests;
 
@@ -9,7 +15,19 @@ public sealed class ApiInfrastructureTests : IClassFixture<WebApplicationFactory
 
     public ApiInfrastructureTests(WebApplicationFactory<Program> factory)
     {
-        _factory = factory;
+        _factory = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<RoboCoffeeDbContext>();
+                services.RemoveAll<DbContextOptions<RoboCoffeeDbContext>>();
+                services.RemoveAll<IDbContextOptionsConfiguration<RoboCoffeeDbContext>>();
+
+                services.AddDbContext<RoboCoffeeDbContext>(options =>
+                    options.UseInMemoryDatabase("RoboCoffeeInfrastructureTests"));
+            });
+        });
     }
 
     [Fact]

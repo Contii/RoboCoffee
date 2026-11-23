@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using RoboCoffee.Application.Orders;
+using RoboCoffee.Contracts.Catalog;
 using RoboCoffee.Contracts.Orders;
 
 namespace RoboCoffee.Api.Controllers;
@@ -18,6 +19,29 @@ public sealed class OrdersController : ControllerBase
     {
         _orders = orders;
         _createValidator = createValidator;
+    }
+
+    [HttpGet]
+    [ProducesResponseType<PagedResult<OrderResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<OrderResponse>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _orders.GetPagedAsync(page, pageSize, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType<OrderResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OrderResponse>> GetById(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var order = await _orders.GetByIdAsync(id, cancellationToken);
+        return Ok(order);
     }
 
     [HttpPost]

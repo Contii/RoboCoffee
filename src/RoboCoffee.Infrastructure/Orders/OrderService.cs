@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RoboCoffee.Application.Catalog;
 using RoboCoffee.Application.Orders;
+using RoboCoffee.Contracts.Catalog;
 using RoboCoffee.Contracts.Orders;
 using RoboCoffee.Domain.Exceptions;
 using RoboCoffee.Domain.Orders;
@@ -15,6 +16,53 @@ public sealed class OrderService : IOrderService
     public OrderService(RoboCoffeeDbContext context)
     {
         _context = context;
+    }
+
+    public async Task<PagedResult<OrderResponse>> GetPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        if (page < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(page), "Page must be greater than zero.");
+        }
+
+        if (pageSize is < 1 or > 100)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be between 1 and 100.");
+        }
+
+        var query = _context.Orders
+            .AsNoTracking()
+            .Include(order => order.Items);
+
+        var totalItems = await query.CountAsync(cancellationToken);
+        var orders = await query
+            .OrderByDescending(order => order.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<OrderResponse>(
+            orders.Select(Map).ToList(),
+            page,
+            pageSize,
+            totalItems);
+    }
+
+    public async Task<OrderResponse> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var order = await _context.Orders
+            .AsNoTracking()
+            .Include(candidate => candidate.Items)
+            .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken);
+
+        return order is null
+            ? throw new OrderNotFoundException(id)
+            : Map(order);
     }
 
     public async Task<OrderResponse> CreateAsync(
