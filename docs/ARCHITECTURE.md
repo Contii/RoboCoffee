@@ -247,9 +247,11 @@ Implementação:
 - Timeout curto.
 - Dois retries com backoff exponencial.
 - Circuit breaker.
-- Cache em memória por CEP por 24 horas.
 - Falha externa não impede o checkout.
 - Resposta traduzida para um modelo próprio da aplicação.
+
+O cache em memória por CEP por 24 horas é uma evolução de resiliência futura.
+No estado atual, o lookup não mantém cache.
 
 Não chamar a ViaCEP diretamente no controller ou no repositório.
 

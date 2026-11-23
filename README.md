@@ -13,6 +13,17 @@ A solution .NET 10 foi criada com projetos separados por responsabilidade:
 - `RoboCoffee.UnitTests`
 - `RoboCoffee.IntegrationTests`
 
+O projeto usa monólito modular em camadas:
+
+- `RoboCoffee.Api`: controllers, middleware, Swagger, health checks e composição;
+- `RoboCoffee.Application`: casos de uso, interfaces e validadores;
+- `RoboCoffee.Domain`: entidades, invariantes e máquina de estados;
+- `RoboCoffee.Infrastructure`: EF Core, PostgreSQL, ViaCEP e configurações externas;
+- `RoboCoffee.Contracts`: DTOs de entrada e saída.
+
+Regras críticas ficam no domínio. Controllers são finos e EF Core é usado diretamente
+por services específicos. O projeto não usa repository genérico, CQRS ou Event Sourcing.
+
 ## Domínio atual
 
 O núcleo de domínio já contém os modelos principais:
@@ -25,62 +36,212 @@ Os pedidos preservam nome e preço do produto no momento da inclusão do item. A
 
 ## Desenvolvimento local
 
-Pré-requisito: SDK .NET 10.
+Pré-requisitos gerais:
 
-```powershell
-dotnet restore
-dotnet build
-dotnet test
-```
+- SDK .NET 10;
+- Docker Desktop para Compose e testes PostgreSQL com Testcontainers;
+- PostgreSQL em `localhost:5432` quando a API for executada diretamente pelo .NET.
 
-## Docker
+O ambiente da API é definido por `ASPNETCORE_ENVIRONMENT`.
 
-Com Docker Compose:
+- `Development`: Swagger/OpenAPI habilitados e migrations aplicadas na inicialização;
+- `Production`: Swagger/OpenAPI desabilitados e migrations controladas externamente.
+
+<details>
+<summary><strong>Opção 1: Docker Compose</strong></summary>
+
+Esta é a forma recomendada para um clone novo.
+
+#### Development
+
+Nenhum `.env` é necessário. Na raiz do repositório:
 
 ```powershell
 docker compose up --build
 ```
 
-A API ficará disponível em `http://localhost:8080`, PostgreSQL na porta pública `5433` e o Swagger em `http://localhost:8080/swagger`.
+O Compose cria PostgreSQL 16 e a API em Development. A API aplica migrations
+automaticamente na inicialização.
 
-Copie `.env.example` para `.env` para substituir as credenciais locais. O arquivo `.env` não é versionado.
+URLs:
 
-No ambiente `Development`, a API aplica as migrations EF Core automaticamente na inicialização.
+- API: `http://localhost:8080`;
+- Swagger: `http://localhost:8080/swagger`;
+- OpenAPI: `http://localhost:8080/openapi/v1.json`;
+- Health: `http://localhost:8080/health`;
+- PostgreSQL no host: `localhost:5433`.
 
-## Cobertura de regras
-
-Os testes unitários cobrem produto indisponível ou inativo, pedido vazio, quantidade mínima, snapshot de preço, total, cancelamento e todas as transições inválidas da máquina de estados.
-
-Os testes de integração cobrem API com EF Core InMemory e persistência real PostgreSQL por Testcontainers. Para executar PostgreSQL real, Docker precisa estar disponível:
+Comandos úteis:
 
 ```powershell
+docker compose ps
+docker compose logs api
+docker compose logs -f api
+docker compose up --build -d
+docker compose down
+```
+
+Use `docker compose logs api` para ler os logs acumulados e
+`docker compose logs -f api` para acompanhar novos logs.
+Os logs podem ser filtrados por correlation ID:
+
+```powershell
+docker compose logs api | Select-String "CORRELATION-ID"
+```
+
+Serilog escreve no stdout/stderr do container. Não há gravação em arquivo nem
+envio para serviço externo.
+
+`docker compose down` preserva o volume PostgreSQL. Use
+`docker compose down -v` somente para apagar os dados locais.
+
+Para personalizar credenciais ou ambiente, copie o modelo:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Edite o `.env`. O arquivo `.env.example` é versionado como referência e
+`.env` é ignorado pelo Git.
+
+#### Production no Docker
+
+Defina Production no `.env`:
+
+```text
+ASPNETCORE_ENVIRONMENT=Production
+POSTGRES_DB=robocoffee
+POSTGRES_USER=robocoffee
+POSTGRES_PASSWORD=senha-segura
+```
+
+Inicie apenas PostgreSQL:
+
+```powershell
+docker compose up -d postgres
+```
+
+Em outro terminal, configure o ambiente de migration manual com a porta pública
+do PostgreSQL:
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT="Production"
+$env:ConnectionStrings__PostgreSQL="Host=localhost;Port=5433;Database=robocoffee;Username=robocoffee;Password=senha-segura"
+dotnet tool run dotnet-ef database update --project src/RoboCoffee.Infrastructure/RoboCoffee.Infrastructure.csproj --startup-project src/RoboCoffee.Api/RoboCoffee.Api.csproj --context RoboCoffeeDbContext
+```
+
+Depois inicie ou reconstrua a API:
+
+```powershell
+docker compose up --build -d api
+```
+
+Em Production:
+
+- migrations não são aplicadas pela API;
+- Swagger/OpenAPI não são habilitados;
+- health pode ser consultado em `http://localhost:8080/health`;
+- PostgreSQL continua persistindo dados no volume.
+- Serilog escreve no stdout/stderr do container;
+- use `docker compose logs api` para leitura acumulada;
+- use `docker compose logs -f api` para acompanhamento em tempo real;
+- use `docker compose down` para preservar dados e `docker compose down -v` para apagá-los.
+
+#### Testes dentro da opção Docker
+
+Os testes não usam os containers da aplicação. Eles usam o projeto local e
+Testcontainers separadamente.
+
+```powershell
+dotnet test
+dotnet test tests/RoboCoffee.UnitTests/RoboCoffee.UnitTests.csproj
 dotnet test tests/RoboCoffee.IntegrationTests/RoboCoffee.IntegrationTests.csproj
 ```
 
-## API
+Docker Desktop deve estar disponível para os testes que usam PostgreSQL real.
 
-Durante o desenvolvimento:
+</details>
+
+<details>
+<summary><strong>Opção 2: executar diretamente com .NET</strong></summary>
+
+Esta opção exige PostgreSQL em `localhost:5432`.
+
+#### Development
+
+Configure o User Secret da API:
+
+```powershell
+dotnet user-secrets init --project src/RoboCoffee.Api/RoboCoffee.Api.csproj
+dotnet user-secrets set "ConnectionStrings:PostgreSQL" "Host=localhost;Port=5432;Database=robocoffee;Username=USUARIO;Password=SENHA" --project src/RoboCoffee.Api/RoboCoffee.Api.csproj
+```
+
+Restaure e compile a solution:
+
+```powershell
+dotnet restore
+dotnet build
+```
+
+O launch profile `http` define `ASPNETCORE_ENVIRONMENT=Development`. Execute:
 
 ```powershell
 dotnet run --project src/RoboCoffee.Api/RoboCoffee.Api.csproj --launch-profile http
 ```
 
-- Swagger UI: `http://localhost:5128/swagger`
-- OpenAPI: `http://localhost:5128/openapi/v1.json`
-- Health check: `http://localhost:5128/health`
+Os logs aparecem no terminal que executou o comando.
+Serilog não grava em arquivo nem envia para serviço externo.
 
-## Persistência
+URLs:
 
-A infraestrutura usa Entity Framework Core com PostgreSQL.
+- Swagger: `http://localhost:5128/swagger`;
+- OpenAPI: `http://localhost:5128/openapi/v1.json`;
+- Health: `http://localhost:5128/health`.
 
-Comandos locais de migrations:
+Nesta opção, a API aplica migrations automaticamente na inicialização.
+Dados permanecem no PostgreSQL local entre execuções.
+
+#### Production
+
+Configure ambiente e connection string no processo que iniciará a API:
 
 ```powershell
-dotnet tool run dotnet-ef migrations list --project src/RoboCoffee.Infrastructure/RoboCoffee.Infrastructure.csproj --startup-project src/RoboCoffee.Api/RoboCoffee.Api.csproj --context RoboCoffeeDbContext
+$env:ASPNETCORE_ENVIRONMENT="Production"
+$env:ConnectionStrings__PostgreSQL="Host=localhost;Port=5432;Database=robocoffee;Username=USUARIO;Password=SENHA"
+```
+
+Aplique migrations manualmente antes da API:
+
+```powershell
 dotnet tool run dotnet-ef database update --project src/RoboCoffee.Infrastructure/RoboCoffee.Infrastructure.csproj --startup-project src/RoboCoffee.Api/RoboCoffee.Api.csproj --context RoboCoffeeDbContext
 ```
 
-No estado atual, `database update` exige uma instância PostgreSQL acessível por `ConnectionStrings:PostgreSQL`.
+Inicie sem o launch profile para não forçar Development:
+
+```powershell
+dotnet run --project src/RoboCoffee.Api/RoboCoffee.Api.csproj --no-launch-profile --urls "http://localhost:5128"
+```
+
+Os logs continuam aparecendo no terminal que iniciou o processo.
+
+Em Production não haverá Swagger/OpenAPI. Health estará em
+`http://localhost:5128/health`.
+
+Serilog escreve no terminal que iniciou o processo. Não há gravação em arquivo
+nem envio para serviço externo. Os logs são mantidos apenas pelo terminal
+enquanto o processo está disponível.
+
+#### Testes dentro da opção .NET
+
+```powershell
+dotnet test
+dotnet test tests/RoboCoffee.UnitTests/RoboCoffee.UnitTests.csproj
+dotnet test tests/RoboCoffee.IntegrationTests/RoboCoffee.IntegrationTests.csproj
+```
+
+Os testes PostgreSQL também precisam de Docker via Testcontainers.
+
+</details>
 
 ## Produtos
 
@@ -105,9 +266,15 @@ Endpoints disponíveis:
 
 ```text
 POST /api/orders
+GET  /api/orders?page=1&pageSize=20
+GET  /api/orders/{id}
 POST /api/orders/{id}/advance
 POST /api/orders/{id}/cancel
 ```
+
+`GET /api/orders/{id}` retorna o pedido completo com seus itens.
+`GET /api/orders` retorna pedidos paginados, ordenados pelos mais recentes,
+com `page`, `pageSize`, `totalItems`, `totalPages` e `items`.
 
 O checkout cria o pedido, calcula o total a partir dos itens e preserva nome e preço atual dos produtos nos snapshots.
 
@@ -133,24 +300,6 @@ GET /api/addresses/{postalCode}
 CEP com oito dígitos retorna `200` com os dados confirmados. CEP inválido retorna `400`; CEP inexistente ou falha externa retorna `404`, sem impedir a criação de pedidos.
 
 O cliente ViaCEP usa timeout de 5 segundos, até dois retries com backoff exponencial e circuit breaker após cinco falhas transitórias.
-
-## Logs e rastreabilidade
-
-A API usa Serilog para logs estruturados no console.
-
-Cada requisição aceita o header opcional `X-Correlation-ID`. Quando informado, o mesmo valor é usado no log e devolvido na resposta. Quando ausente ou maior que 128 caracteres, a API gera um GUID.
-
-## Arquitetura
-
-O projeto usa monólito modular em camadas:
-
-- `RoboCoffee.Api`: controllers, middleware, Swagger, health checks e composição;
-- `RoboCoffee.Application`: casos de uso, interfaces e validadores;
-- `RoboCoffee.Domain`: entidades, invariantes e máquina de estados;
-- `RoboCoffee.Infrastructure`: EF Core, PostgreSQL, ViaCEP e configurações externas;
-- `RoboCoffee.Contracts`: DTOs de entrada e saída.
-
-Regras críticas não ficam nos controllers. EF Core é usado diretamente por services específicos; o projeto não usa repository genérico, CQRS ou Event Sourcing.
 
 Decisões técnicas e limites estão documentados em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -204,3 +353,26 @@ Os itens abaixo pertencem ao plano “Vá Além” e ainda não fazem parte do M
 - cache por CEP;
 - GitHub Actions;
 - revisão final de segurança e performance.
+
+## Decisões técnicas pendentes
+
+Os pontos abaixo estão definidos no projeto ou documentados como evolução, mas
+devem ser escolhidos explicitamente em uma próxima entrega:
+
+1. **Cache de ViaCEP** não está implementado. O estado atual consulta o serviço
+   em cada lookup e usa timeout, retries e circuit breaker. Cache por CEP por
+   24 horas pode ser definido como evolução futura.
+2. `Product.UpdatePrice` e `Product.SetAvailability` são métodos de domínio
+   existentes e cobertos por testes. O CRUD atual usa `Product.UpdateDetails`
+   para atualizar os dados completos. Os métodos podem ser removidos ou
+   associados a endpoints específicos sem alterar o comportamento atual.
+3. A integração ViaCEP não registra callbacks de Polly para retry ou abertura
+   do circuit breaker. Serilog registra a requisição, mas não os eventos internos
+   dessa resiliência. Logs dedicados podem ser adicionados como evolução.
+4. `StockQuantity` permanece no modelo de produto como preparação para estoque
+   limitado. Ele é validado e persistido, mas não possui atualização concorrente
+   nem bloqueia overselling. A implementação completa pertence ao item
+   “Pico das 8h”.
+5. Para demonstração, Docker Compose é a forma recomendada: cria API,
+   PostgreSQL, migration e volume local. PostgreSQL local também é suportado
+   pela connection string, mas exige uma instância acessível em `5432`.
